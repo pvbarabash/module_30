@@ -1,8 +1,9 @@
-import pytest
-from module_30.src.app import create_app
-from module_30.src.models import db, Client, Parking, ClientParking
 from datetime import datetime, timezone
 
+import pytest
+
+from module_30.src.app import create_app
+from module_30.src.models import Client, ClientParking, Parking, db
 
 @pytest.fixture(scope="session")
 def app():

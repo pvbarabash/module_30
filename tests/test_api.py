@@ -1,7 +1,8 @@
 import pytest
-from module_30.src.factories import ClientFactory, ParkingFactory
-from module_30.src.models import Client, Parking, ClientParking
 from sqlalchemy import select
+
+from module_30.src.factories import ClientFactory, ParkingFactory
+from module_30.src.models import Client, ClientParking, Parking
 
 
 class TestParkingAPI:

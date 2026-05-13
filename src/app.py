@@ -1,6 +1,8 @@
-from flask import Flask, jsonify, request
-from module_30.src.models import db, Client, Parking, ClientParking
 from datetime import datetime, timezone
+
+from flask import Flask, jsonify, request
+
+from module_30.src.models import Client, ClientParking, Parking, db
 
 def create_app():
     app = Flask(__name__)
