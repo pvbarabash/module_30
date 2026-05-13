@@ -1,6 +1,6 @@
 import pytest
-from module_29_testing.hw.src.factories import ClientFactory, ParkingFactory
-from module_29_testing.hw.src.models import Client, Parking, ClientParking
+from module_30.src.factories import ClientFactory, ParkingFactory
+from module_30.src.models import Client, Parking, ClientParking
 from sqlalchemy import select
 
 

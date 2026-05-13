@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from module_29_testing.hw.src.models import db, Client, Parking, ClientParking
+from module_30.src.models import db, Client, Parking, ClientParking
 from datetime import datetime, timezone
 
 def create_app():

@@ -1,6 +1,6 @@
 import pytest
-from module_29_testing.hw.src.app import create_app
-from module_29_testing.hw.src.models import db, Client, Parking, ClientParking
+from module_30.src.app import create_app
+from module_30.src.models import db, Client, Parking, ClientParking
 from datetime import datetime, timezone
 
 
