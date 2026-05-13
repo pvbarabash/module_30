@@ -6,13 +6,18 @@ from module_30.src.models import Client, ClientParking, Parking
 
 
 class TestParkingAPI:
-    @pytest.mark.parametrize("url_template,expected_status", [
-        ('/clients', 200),
-        ('/clients/{client_id}', 200),
-    ])
-    def test_get_methods_return_200(self, client, app, db_instance, url_template, expected_status):
+    @pytest.mark.parametrize(
+        "url_template,expected_status",
+        [
+            ("/clients", 200),
+            ("/clients/{client_id}", 200),
+        ],
+    )
+    def test_get_methods_return_200(
+        self, client, app, db_instance, url_template, expected_status
+    ):
         """Тест: все GET‑методы возвращают код 200"""
-        if '{client_id}' in url_template:
+        if "{client_id}" in url_template:
             with app.app_context():
                 test_client = db_instance.session.scalar(select(Client))
                 if test_client is None:
@@ -28,64 +33,58 @@ class TestParkingAPI:
     def test_create_client(self, client, db_instance):
         """Тест: создание клиента"""
         data = {
-            'name': 'New',
-            'surname': 'Client',
-            'credit_card': '5678123456781234',
-            'car_number': 'B456DE777'
+            "name": "New",
+            "surname": "Client",
+            "credit_card": "5678123456781234",
+            "car_number": "B456DE777",
         }
-        response = client.post('/clients', json=data)
+        response = client.post("/clients", json=data)
         assert response.status_code == 201
 
         response_data = response.get_json()
-        assert response_data['name'] == 'New'
-        assert response_data['surname'] == 'Client'
+        assert response_data["name"] == "New"
+        assert response_data["surname"] == "Client"
 
         with client.application.app_context():
             stmt = select(Client).where(
-    Client.name == 'New',
-                Client.surname == 'Client'
+                Client.name == "New", Client.surname == "Client"
             )
             created_client = db_instance.session.scalar(stmt)
             assert created_client is not None
-            assert created_client.car_number == 'B456DE777'
+            assert created_client.car_number == "B456DE777"
 
     def test_create_client_with_factory(self, client, db_instance):
         new_client = ClientFactory()
 
         client_data = new_client.to_dict()
 
-        response = client.post('/clients', json=client_data)
+        response = client.post("/clients", json=client_data)
         assert response.status_code == 201
 
         response_data = response.get_json()
-        assert response_data['name'] == new_client.name
-        assert response_data['surname'] ==  new_client.surname
+        assert response_data["name"] == new_client.name
+        assert response_data["surname"] == new_client.surname
 
         with client.application.app_context():
             stmt = select(Client).where(
-                Client.name == new_client.name,
-                Client.surname == new_client.surname
+                Client.name == new_client.name, Client.surname == new_client.surname
             )
             created_client = db_instance.session.scalar(stmt)
             assert created_client is not None
             assert created_client.car_number == new_client.car_number
 
-
     def test_create_parking(self, client, db_instance):
         """Тест: создание парковки"""
-        data = {
-            'address': 'New Parking Address',
-            'count_places': 20
-        }
-        response = client.post('/parkings', json=data)
+        data = {"address": "New Parking Address", "count_places": 20}
+        response = client.post("/parkings", json=data)
         assert response.status_code == 201
 
         response_data = response.get_json()
-        assert response_data['address'] == 'New Parking Address'
-        assert response_data['count_available_places'] == 20
+        assert response_data["address"] == "New Parking Address"
+        assert response_data["count_available_places"] == 20
 
         with client.application.app_context():
-            stmt = select(Parking).where(Parking.address == 'New Parking Address')
+            stmt = select(Parking).where(Parking.address == "New Parking Address")
             created_parking = db_instance.session.scalar(stmt)
             assert created_parking is not None
             assert created_parking.count_places == 20
@@ -95,36 +94,40 @@ class TestParkingAPI:
         new_parking = ParkingFactory()
         parking_data = new_parking.to_dict()
 
-        response = client.post('/parkings', json=parking_data)
+        response = client.post("/parkings", json=parking_data)
         assert response.status_code == 201
 
         response_data = response.get_json()
-        assert response_data['address'] == new_parking.address
-        assert response_data['count_available_places'] == new_parking.count_available_places
+        assert response_data["address"] == new_parking.address
+        assert (
+            response_data["count_available_places"]
+            == new_parking.count_available_places
+        )
 
         with client.application.app_context():
             stmt = select(Parking).where(Parking.address == new_parking.address)
             created_parking = db_instance.session.scalar(stmt)
             assert created_parking is not None
             assert created_parking.count_places == new_parking.count_places
-            assert created_parking.count_available_places == new_parking.count_available_places
-
+            assert (
+                created_parking.count_available_places
+                == new_parking.count_available_places
+            )
 
     @pytest.mark.parking
     def test_enter_parking_success(self, client, db_instance):
         """Тест: успешный заезд на парковку"""
         new_client_data = {
-            'name': 'NewTest',
-            'surname': 'Client',
-            'credit_card': '1111222233334444',
-            'car_number': 'C789EF777'
+            "name": "NewTest",
+            "surname": "Client",
+            "credit_card": "1111222233334444",
+            "car_number": "C789EF777",
         }
-        client.post('/clients', json=new_client_data)
+        client.post("/clients", json=new_client_data)
 
         with client.application.app_context():
             stmt = select(Client).where(
-                Client.name == 'NewTest',
-                Client.surname == 'Client'
+                Client.name == "NewTest", Client.surname == "Client"
             )
             new_client = db_instance.session.scalar(stmt)
 
@@ -132,31 +135,29 @@ class TestParkingAPI:
             parking_obj = db_instance.session.scalar(stmt)
 
             available_places_before = db_instance.session.scalar(
-                select(Parking.count_available_places)
-                .where(Parking.id == parking_obj.id)
+                select(Parking.count_available_places).where(
+                    Parking.id == parking_obj.id
+                )
             )
 
-            data = {
-                'client_id': new_client.id,
-                'parking_id': parking_obj.id
-            }
-            response = client.post('/client_parkings', json=data)
+            data = {"client_id": new_client.id, "parking_id": parking_obj.id}
+            response = client.post("/client_parkings", json=data)
             assert response.status_code == 201
 
             response_data = response.get_json()
-            assert response_data['client_id'] == new_client.id
-            assert response_data['parking_id'] == parking_obj.id
-            assert response_data['time_in'] is not None
-            assert response_data['time_out'] is None
+            assert response_data["client_id"] == new_client.id
+            assert response_data["parking_id"] == parking_obj.id
+            assert response_data["time_in"] is not None
+            assert response_data["time_out"] is None
 
             # Проверяем уменьшение свободных мест
             updated_parking = db_instance.session.get(Parking, parking_obj.id)
-            assert updated_parking.count_available_places == available_places_before  - 1
+            assert updated_parking.count_available_places == available_places_before - 1
 
             # Проверяем создание записи в логе
             stmt = select(ClientParking).where(
                 ClientParking.client_id == new_client.id,
-                ClientParking.parking_id == parking_obj.id
+                ClientParking.parking_id == parking_obj.id,
             )
             log_entry = db_instance.session.scalar(stmt)
             assert log_entry is not None
@@ -167,40 +168,34 @@ class TestParkingAPI:
     def test_exit_parking_success(self, client, db_instance):
         """Тест: успешный выезд с парковки"""
         new_client_data = {
-            'name': 'NewTest',
-            'surname': 'Client',
-            'credit_card': '1111222233334444',
-            'car_number': 'C789EF777'
+            "name": "NewTest",
+            "surname": "Client",
+            "credit_card": "1111222233334444",
+            "car_number": "C789EF777",
         }
-        client.post('/clients', json=new_client_data)
+        client.post("/clients", json=new_client_data)
 
         with client.application.app_context():
             stmt = select(Client).where(
-                Client.name == 'NewTest',
-                Client.surname == 'Client'
+                Client.name == "NewTest", Client.surname == "Client"
             )
             new_client = db_instance.session.scalar(stmt)
 
             stmt = select(Parking)
             parking_obj = db_instance.session.scalar(stmt)
 
-            data = {
-                'client_id': new_client.id,
-                'parking_id': parking_obj.id
-            }
-            client.post('/client_parkings', json=data)
+            data = {"client_id": new_client.id, "parking_id": parking_obj.id}
+            client.post("/client_parkings", json=data)
 
             available_places_before = db_instance.session.scalar(
-                select(Parking.count_available_places)
-                .where(Parking.id == parking_obj.id)
+                select(Parking.count_available_places).where(
+                    Parking.id == parking_obj.id
+                )
             )
 
             # Теперь выезжаем
-            exit_data = {
-                'client_id': new_client.id,
-                'parking_id': parking_obj.id
-            }
-            response = client.delete('/client_parkings', json=exit_data)
+            exit_data = {"client_id": new_client.id, "parking_id": parking_obj.id}
+            response = client.delete("/client_parkings", json=exit_data)
             assert response.status_code == 200
 
             # Проверяем увеличение свободных мест
@@ -209,8 +204,8 @@ class TestParkingAPI:
 
             # Проверяем время выезда
             stmt = select(ClientParking).where(
-        ClientParking.client_id == new_client.id,
-                    ClientParking.parking_id == parking_obj.id
+                ClientParking.client_id == new_client.id,
+                ClientParking.parking_id == parking_obj.id,
             )
             log_entry = db_instance.session.execute(stmt).scalar_one_or_none()
             assert log_entry.time_out is not None
