@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request
 
 from module_30.src.models import Client, ClientParking, Parking, db
 
+
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///prod.db'
