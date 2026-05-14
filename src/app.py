@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
+from typing import Dict, Any
 
 from flask import Flask, jsonify, request
+from flask.wrappers import Response
 
 from module_30.src.models import Client, ClientParking, Parking, db
 
 
-def create_app():
+def create_app() -> Flask:
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///prod.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -16,20 +18,20 @@ def create_app():
     return app
 
 
-def register_routes(app):
+def register_routes(app: Flask) -> None:
     @app.route("/clients", methods=["GET"])
-    def get_clients():
+    def get_clients() -> Response:
         clients = Client.query.all()
         return jsonify([client.to_dict() for client in clients])
 
     @app.route("/clients/<int:client_id>", methods=["GET"])
-    def get_client(client_id):
+    def get_client(client_id: int) -> Response:
         client = Client.query.get_or_404(client_id)
         return jsonify(client.to_dict())
 
     @app.route("/clients", methods=["POST"])
-    def create_client():
-        data = request.get_json()
+    def create_client() -> tuple[Response, int]:
+        data: Dict[str, Any] = request.get_json()
 
         if not data.get("name") or not data.get("surname"):
             return jsonify({"error": "Name and surname are required"}), 400
@@ -47,8 +49,8 @@ def register_routes(app):
         return jsonify(client.to_dict()), 201
 
     @app.route("/parkings", methods=["POST"])
-    def create_parking():
-        data = request.get_json()
+    def create_parking() -> tuple[Response, int]:
+        data: Dict[str, Any] = request.get_json()
 
         if not data.get("address") or "count_places" not in data:
             return jsonify({"error": "Address and count_places are required"}), 400
@@ -68,8 +70,8 @@ def register_routes(app):
         return jsonify(parking.to_dict()), 201
 
     @app.route("/client_parkings", methods=["POST"])
-    def enter_parking():
-        data = request.get_json()
+    def enter_parking() -> tuple[Response, int]:
+        data: Dict[str, Any] = request.get_json()
         client_id = data.get("client_id")
         parking_id = data.get("parking_id")
 
@@ -111,8 +113,8 @@ def register_routes(app):
         return jsonify(log_entry.to_dict()), 201
 
     @app.route("/client_parkings", methods=["DELETE"])
-    def exit_parking():
-        data = request.get_json()
+    def exit_parking() -> tuple[Response, int]:
+        data: Dict[str, Any] = request.get_json()
         client_id = data.get("client_id")
         parking_id = data.get("parking_id")
 

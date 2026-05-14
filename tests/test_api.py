@@ -1,5 +1,10 @@
 import pytest
 from sqlalchemy import select
+from typing import Any, Dict
+
+from flask import Flask
+from flask.testing import FlaskClient
+from flask_sqlalchemy import SQLAlchemy
 
 from module_30.src.factories import ClientFactory, ParkingFactory
 from module_30.src.models import Client, ClientParking, Parking
@@ -14,8 +19,13 @@ class TestParkingAPI:
         ],
     )
     def test_get_methods_return_200(
-        self, client, app, db_instance, url_template, expected_status
-    ):
+        self,
+        client: FlaskClient,
+        app: Flask,
+        db_instance: SQLAlchemy,
+        url_template: str,
+        expected_status: int
+    ) -> None:
         """Тест: все GET‑методы возвращают код 200"""
         if "{client_id}" in url_template:
             with app.app_context():
@@ -30,9 +40,13 @@ class TestParkingAPI:
         response = client.get(url)
         assert response.status_code == expected_status
 
-    def test_create_client(self, client, db_instance):
+    def test_create_client(
+            self,
+            client: FlaskClient,
+            db_instance: SQLAlchemy
+    ) -> None:
         """Тест: создание клиента"""
-        data = {
+        data: Dict[str, Any] = {
             "name": "New",
             "surname": "Client",
             "credit_card": "5678123456781234",
@@ -41,7 +55,7 @@ class TestParkingAPI:
         response = client.post("/clients", json=data)
         assert response.status_code == 201
 
-        response_data = response.get_json()
+        response_data: Dict[str, Any] = response.get_json()
         assert response_data["name"] == "New"
         assert response_data["surname"] == "Client"
 
@@ -53,15 +67,19 @@ class TestParkingAPI:
             assert created_client is not None
             assert created_client.car_number == "B456DE777"
 
-    def test_create_client_with_factory(self, client, db_instance):
+    def test_create_client_with_factory(
+            self,
+            client: FlaskClient,
+            db_instance: SQLAlchemy,
+    ) -> None:
         new_client = ClientFactory()
 
-        client_data = new_client.to_dict()
+        client_data: Dict[str, Any] = new_client.to_dict()  # type: ignore[attr-defined]
 
         response = client.post("/clients", json=client_data)
         assert response.status_code == 201
 
-        response_data = response.get_json()
+        response_data: Dict[str, Any] = response.get_json()
         assert response_data["name"] == new_client.name
         assert response_data["surname"] == new_client.surname
 
@@ -73,13 +91,17 @@ class TestParkingAPI:
             assert created_client is not None
             assert created_client.car_number == new_client.car_number
 
-    def test_create_parking(self, client, db_instance):
+    def test_create_parking(
+            self,
+            client: FlaskClient,
+            db_instance: SQLAlchemy,
+    ) -> None:
         """Тест: создание парковки"""
-        data = {"address": "New Parking Address", "count_places": 20}
+        data: Dict[str, Any] = {"address": "New Parking Address", "count_places": 20}
         response = client.post("/parkings", json=data)
         assert response.status_code == 201
 
-        response_data = response.get_json()
+        response_data: Dict[str, Any] = response.get_json()
         assert response_data["address"] == "New Parking Address"
         assert response_data["count_available_places"] == 20
 
@@ -90,14 +112,18 @@ class TestParkingAPI:
             assert created_parking.count_places == 20
             assert created_parking.count_available_places == 20
 
-    def test_create_parking_with_factory(self, client, db_instance):
+    def test_create_parking_with_factory(
+            self,
+            client: FlaskClient,
+            db_instance: SQLAlchemy,
+    ) -> None:
         new_parking = ParkingFactory()
-        parking_data = new_parking.to_dict()
+        parking_data: Dict[str, Any] = new_parking.to_dict() # type: ignore[attr-defined]
 
         response = client.post("/parkings", json=parking_data)
         assert response.status_code == 201
 
-        response_data = response.get_json()
+        response_data: Dict[str, Any] = response.get_json()
         assert response_data["address"] == new_parking.address
         assert (
             response_data["count_available_places"]
@@ -115,9 +141,13 @@ class TestParkingAPI:
             )
 
     @pytest.mark.parking
-    def test_enter_parking_success(self, client, db_instance):
+    def test_enter_parking_success(
+            self,
+            client: FlaskClient,
+            db_instance: SQLAlchemy,
+    ) -> None:
         """Тест: успешный заезд на парковку"""
-        new_client_data = {
+        new_client_data: Dict[str, Any] = {
             "name": "NewTest",
             "surname": "Client",
             "credit_card": "1111222233334444",
@@ -140,11 +170,11 @@ class TestParkingAPI:
                 )
             )
 
-            data = {"client_id": new_client.id, "parking_id": parking_obj.id}
+            data: Dict[str, Any] = {"client_id": new_client.id, "parking_id": parking_obj.id}
             response = client.post("/client_parkings", json=data)
             assert response.status_code == 201
 
-            response_data = response.get_json()
+            response_data: Dict[str, Any] = response.get_json()
             assert response_data["client_id"] == new_client.id
             assert response_data["parking_id"] == parking_obj.id
             assert response_data["time_in"] is not None
@@ -165,9 +195,13 @@ class TestParkingAPI:
             assert log_entry.time_out is None
 
     @pytest.mark.parking
-    def test_exit_parking_success(self, client, db_instance):
+    def test_exit_parking_success(
+            self,
+            client: FlaskClient,
+            db_instance: SQLAlchemy,
+    ) -> None:
         """Тест: успешный выезд с парковки"""
-        new_client_data = {
+        new_client_data: Dict[str, Any] = {
             "name": "NewTest",
             "surname": "Client",
             "credit_card": "1111222233334444",
@@ -184,7 +218,7 @@ class TestParkingAPI:
             stmt = select(Parking)
             parking_obj = db_instance.session.scalar(stmt)
 
-            data = {"client_id": new_client.id, "parking_id": parking_obj.id}
+            data: Dict[str, Any] = {"client_id": new_client.id, "parking_id": parking_obj.id}
             client.post("/client_parkings", json=data)
 
             available_places_before = db_instance.session.scalar(
@@ -194,7 +228,7 @@ class TestParkingAPI:
             )
 
             # Теперь выезжаем
-            exit_data = {"client_id": new_client.id, "parking_id": parking_obj.id}
+            exit_data: Dict[str, Any] = {"client_id": new_client.id, "parking_id": parking_obj.id}
             response = client.delete("/client_parkings", json=exit_data)
             assert response.status_code == 200
 
