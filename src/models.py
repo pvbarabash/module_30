@@ -1,6 +1,7 @@
 from typing import Optional
+
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 db = SQLAlchemy()

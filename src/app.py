@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict, Any
+from typing import Any, Dict
 
 from flask import Flask, jsonify, request
 from flask.wrappers import Response
