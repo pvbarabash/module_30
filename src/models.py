@@ -33,7 +33,9 @@ class Parking(db.Model):
     address: Mapped[str] = mapped_column(String(100), nullable=False)
     opened: Mapped[bool] = mapped_column(Boolean(), default=True)
     count_places: Mapped[int] = mapped_column(Integer(), nullable=False)
-    count_available_places: Mapped[int] = mapped_column(Integer(), nullable=False, default=0)
+    count_available_places: Mapped[int] = mapped_column(
+        Integer(), nullable=False, default=0
+    )
 
     def to_dict(self) -> dict[str, str | bool | int]:
         return {

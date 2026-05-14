@@ -24,7 +24,7 @@ class TestParkingAPI:
         app: Flask,
         db_instance: SQLAlchemy,
         url_template: str,
-        expected_status: int
+        expected_status: int,
     ) -> None:
         """Тест: все GET‑методы возвращают код 200"""
         if "{client_id}" in url_template:
@@ -40,11 +40,7 @@ class TestParkingAPI:
         response = client.get(url)
         assert response.status_code == expected_status
 
-    def test_create_client(
-            self,
-            client: FlaskClient,
-            db_instance: SQLAlchemy
-    ) -> None:
+    def test_create_client(self, client: FlaskClient, db_instance: SQLAlchemy) -> None:
         """Тест: создание клиента"""
         data: Dict[str, Any] = {
             "name": "New",
@@ -68,9 +64,9 @@ class TestParkingAPI:
             assert created_client.car_number == "B456DE777"
 
     def test_create_client_with_factory(
-            self,
-            client: FlaskClient,
-            db_instance: SQLAlchemy,
+        self,
+        client: FlaskClient,
+        db_instance: SQLAlchemy,
     ) -> None:
         new_client = ClientFactory()
 
@@ -92,9 +88,9 @@ class TestParkingAPI:
             assert created_client.car_number == new_client.car_number
 
     def test_create_parking(
-            self,
-            client: FlaskClient,
-            db_instance: SQLAlchemy,
+        self,
+        client: FlaskClient,
+        db_instance: SQLAlchemy,
     ) -> None:
         """Тест: создание парковки"""
         data: Dict[str, Any] = {"address": "New Parking Address", "count_places": 20}
@@ -113,12 +109,12 @@ class TestParkingAPI:
             assert created_parking.count_available_places == 20
 
     def test_create_parking_with_factory(
-            self,
-            client: FlaskClient,
-            db_instance: SQLAlchemy,
+        self,
+        client: FlaskClient,
+        db_instance: SQLAlchemy,
     ) -> None:
         new_parking = ParkingFactory()
-        parking_data: Dict[str, Any] = new_parking.to_dict() # type: ignore[attr-defined]
+        parking_data: Dict[str, Any] = new_parking.to_dict()  # type: ignore[attr-defined]
 
         response = client.post("/parkings", json=parking_data)
         assert response.status_code == 201
@@ -142,9 +138,9 @@ class TestParkingAPI:
 
     @pytest.mark.parking
     def test_enter_parking_success(
-            self,
-            client: FlaskClient,
-            db_instance: SQLAlchemy,
+        self,
+        client: FlaskClient,
+        db_instance: SQLAlchemy,
     ) -> None:
         """Тест: успешный заезд на парковку"""
         new_client_data: Dict[str, Any] = {
@@ -170,7 +166,10 @@ class TestParkingAPI:
                 )
             )
 
-            data: Dict[str, Any] = {"client_id": new_client.id, "parking_id": parking_obj.id}
+            data: Dict[str, Any] = {
+                "client_id": new_client.id,
+                "parking_id": parking_obj.id,
+            }
             response = client.post("/client_parkings", json=data)
             assert response.status_code == 201
 
@@ -196,9 +195,9 @@ class TestParkingAPI:
 
     @pytest.mark.parking
     def test_exit_parking_success(
-            self,
-            client: FlaskClient,
-            db_instance: SQLAlchemy,
+        self,
+        client: FlaskClient,
+        db_instance: SQLAlchemy,
     ) -> None:
         """Тест: успешный выезд с парковки"""
         new_client_data: Dict[str, Any] = {
@@ -218,7 +217,10 @@ class TestParkingAPI:
             stmt = select(Parking)
             parking_obj = db_instance.session.scalar(stmt)
 
-            data: Dict[str, Any] = {"client_id": new_client.id, "parking_id": parking_obj.id}
+            data: Dict[str, Any] = {
+                "client_id": new_client.id,
+                "parking_id": parking_obj.id,
+            }
             client.post("/client_parkings", json=data)
 
             available_places_before = db_instance.session.scalar(
@@ -228,7 +230,10 @@ class TestParkingAPI:
             )
 
             # Теперь выезжаем
-            exit_data: Dict[str, Any] = {"client_id": new_client.id, "parking_id": parking_obj.id}
+            exit_data: Dict[str, Any] = {
+                "client_id": new_client.id,
+                "parking_id": parking_obj.id,
+            }
             response = client.delete("/client_parkings", json=exit_data)
             assert response.status_code == 200
 
