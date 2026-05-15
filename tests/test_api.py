@@ -190,6 +190,8 @@ class TestParkingAPI:
 
             # Проверяем уменьшение свободных мест
             updated_parking = db_instance.session.get(Parking, parking_obj.id)
+            if updated_parking is None:
+                pytest.fail("Обновление парковки не найдено в БД")
             assert updated_parking.count_available_places == available_places_before - 1
 
             # Проверяем создание записи в логе
@@ -254,6 +256,8 @@ class TestParkingAPI:
 
             # Проверяем увеличение свободных мест
             updated_parking = db_instance.session.get(Parking, parking_obj.id)
+            if updated_parking is None:
+                pytest.fail("Обновление парковки не найдено в БД")
             assert updated_parking.count_available_places == available_places_before + 1
 
             # Проверяем время выезда
@@ -261,10 +265,10 @@ class TestParkingAPI:
                 ClientParking.client_id == new_client.id,
                 ClientParking.parking_id == parking_obj.id,
             )
+            if stmt is None:
+                pytest.fail("Запись не найдена в БД")
             log_entry = db_instance.session.execute(stmt).scalar_one_or_none()
             assert log_entry.time_out is not None
-            if log_entry.time_out is None:
-                pytest.fail("Время выезда не установлено")
             if log_entry.time_in is None:
                 pytest.fail("Время въезда не установлено")
-            assert log_entry.time_out >= log_entry.time_in
+            assert log_entry.time_out >= log_entry.time_in  # type: ignore
