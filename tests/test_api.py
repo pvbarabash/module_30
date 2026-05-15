@@ -265,9 +265,9 @@ class TestParkingAPI:
                 ClientParking.client_id == new_client.id,
                 ClientParking.parking_id == parking_obj.id,
             )
-            if stmt is None:
-                pytest.fail("Запись не найдена в БД")
             log_entry = db_instance.session.execute(stmt).scalar_one_or_none()
+            if log_entry is None:
+                pytest.fail("Запись не найдена в БД")
             assert log_entry.time_out is not None
             if log_entry.time_in is None:
                 pytest.fail("Время въезда не установлено")
