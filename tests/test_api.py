@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 import pytest
 from flask import Flask
@@ -42,7 +42,7 @@ class TestParkingAPI:
 
     def test_create_client(self, client: FlaskClient, db_instance: SQLAlchemy) -> None:
         """Тест: создание клиента"""
-        data: Dict[str, Any] = {
+        data: Dict[str, str] = {
             "name": "New",
             "surname": "Client",
             "credit_card": "5678123456781234",
@@ -93,7 +93,10 @@ class TestParkingAPI:
         db_instance: SQLAlchemy,
     ) -> None:
         """Тест: создание парковки"""
-        data: Dict[str, Any] = {"address": "New Parking Address", "count_places": 20}
+        data: Dict[str, Union[str, int]] = {
+            "address": "New Parking Address",
+            "count_places": 20,
+        }
         response = client.post("/parkings", json=data)
         assert response.status_code == 201
 
@@ -156,17 +159,23 @@ class TestParkingAPI:
                 Client.name == "NewTest", Client.surname == "Client"
             )
             new_client = db_instance.session.scalar(stmt)
+            if new_client is None:
+                pytest.fail("Тестовый клиент не найден в БД")
 
             stmt = select(Parking)
             parking_obj = db_instance.session.scalar(stmt)
+            if parking_obj is None:
+                pytest.fail("Тестовая парковка не найдена в БД")
 
             available_places_before = db_instance.session.scalar(
                 select(Parking.count_available_places).where(
                     Parking.id == parking_obj.id
                 )
             )
+            if available_places_before is None:
+                pytest.fail("Доступные места на парковке не найдены в БД")
 
-            data: Dict[str, Any] = {
+            data: Dict[str, int] = {
                 "client_id": new_client.id,
                 "parking_id": parking_obj.id,
             }
@@ -213,9 +222,13 @@ class TestParkingAPI:
                 Client.name == "NewTest", Client.surname == "Client"
             )
             new_client = db_instance.session.scalar(stmt)
+            if new_client is None:
+                pytest.fail("Тестовый клиент не найден в БД")
 
             stmt = select(Parking)
             parking_obj = db_instance.session.scalar(stmt)
+            if parking_obj is None:
+                pytest.fail("Тестовая парковка не найдена в БД")
 
             data: Dict[str, Any] = {
                 "client_id": new_client.id,
@@ -228,6 +241,8 @@ class TestParkingAPI:
                     Parking.id == parking_obj.id
                 )
             )
+            if available_places_before is None:
+                pytest.fail("Доступные места на парковке не найдены в БД")
 
             # Теперь выезжаем
             exit_data: Dict[str, Any] = {
@@ -248,4 +263,8 @@ class TestParkingAPI:
             )
             log_entry = db_instance.session.execute(stmt).scalar_one_or_none()
             assert log_entry.time_out is not None
+            if log_entry.time_out is None:
+                pytest.fail("Время выезда не установлено")
+            if log_entry.time_in is None:
+                pytest.fail("Время въезда не установлено")
             assert log_entry.time_out >= log_entry.time_in
